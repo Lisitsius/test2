@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isOpen" class="modal">
+  <div v-if="store.isModalOpen" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>{{ isEditing ? 'Редактировать сотрудника' : 'Добавить сотрудника' }}</h2>
@@ -27,7 +27,7 @@
           <input v-model="form.address" id="address" required />
         </div>
         <div class="actions">
-          <button type="button" @click="close">Отмена</button>
+          <button type="button" @click="closeModal">Отмена</button>
           <button type="submit">Сохранить</button>
         </div>
       </form>
@@ -40,11 +40,11 @@ import { reactive, watch } from 'vue';
 import { useEmployeeStore } from '../stores/employee';
 
 const store = useEmployeeStore();
-const { isModalOpen: isOpen, editingEmployee, editingIndex, closeModal: close, addEmployee, updateEmployee } = store;
+const { isModalOpen, editingEmployee, editingIndex, closeModal, addEmployee, updateEmployee } = store
 
 const form = reactive({ firstName: '', lastName: '', experience: 0, age: 0, address: '' });
 
-const isEditing = () => editingIndex.value >= 0;
+const isEditing = () => editingIndex.value >= 0
 
 // Watch для заполнения формы при редактировании
 watch(editingEmployee, (newVal) => {
