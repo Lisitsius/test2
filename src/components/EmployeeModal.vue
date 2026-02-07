@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>{{ isEditing ? 'Редактировать сотрудника' : 'Добавить сотрудника' }}</h2>
-        <span class="close" @click="close">&times;</span>
+        <span class="close" @click="store.closeModal()">&times;</span>
       </div>
       <form @submit.prevent="save">
         <div class="form-group">
@@ -27,7 +27,7 @@
           <input v-model="form.address" id="address" required />
         </div>
         <div class="actions">
-          <button type="button" @click="closeModal">Отмена</button>
+          <button type="button" @click="store.closeModal()">Отмена</button>
           <button type="submit">Сохранить</button>
         </div>
       </form>
@@ -36,32 +36,55 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
-import { useEmployeeStore } from '../stores/employee';
+import { reactive, watch, computed } from 'vue'
+import { useEmployeeStore } from '../stores/employee'
 
-const store = useEmployeeStore();
-const { isModalOpen, editingEmployee, editingIndex, closeModal, addEmployee, updateEmployee } = store
+const store = useEmployeeStore()
 
-const form = reactive({ firstName: '', lastName: '', experience: 0, age: 0, address: '' });
+const form = reactive({
+  firstName: '',
+  lastName: '',
+  experience: 0,
+  age: 0,
+  address: ''
+})
 
-const isEditing = () => editingIndex.value >= 0
+// Самая безопасная версия isEditing
+const isEditing = computed(() => {
+  return store.editingIndex?.value >= 0 ?? false
+})
 
-// Watch для заполнения формы при редактировании
-watch(editingEmployee, (newVal) => {
-  if (newVal) {
-    Object.assign(form, newVal);
-  }
-});
+// Watch — уже хороший, но оставляем как есть
+watch(
+  () => store.editingEmployee?.value,  // ← добавили ?.
+  (newVal) => {
+    if (newVal) {
+      Object.assign(form, newVal)
+    } else {
+      Object.assign(form, {
+        firstName: '', lastName: '', experience: 0, age: 0, address: ''
+      })
+    }
+  },
+  { immediate: true }
+)
 
 const save = () => {
-  const employee = { ...form };
-  if (isEditing()) {
-    updateEmployee(editingIndex.value, employee);
+  const employee = { ...form }
+
+  if (isEditing.value) {
+    const idx = store.editingIndex.value
+    if (typeof idx === 'number' && idx >= 0) {
+      store.updateEmployee(idx, employee)
+    } else {
+      console.warn('Некорректный индекс при редактировании', idx)
+    }
   } else {
-    addEmployee(employee);
+    store.addEmployee(employee)
   }
-  close();
-};
+
+  store.closeModal()
+}
 </script>
 
 <style scoped>

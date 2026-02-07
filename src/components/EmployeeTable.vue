@@ -33,7 +33,7 @@ const store = useEmployeeStore();
 const { employees, openModal, deleteEmployee } = store;
 
 const editEmployee = (index) => {
-  openModal(index);
+  store.openModal(index)
 };
 </script>
 

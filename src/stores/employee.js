@@ -29,9 +29,13 @@ export const useEmployeeStore = defineStore('employee', () => {
   };
 
   const updateEmployee = (index, employee) => {
-    employees.value[index] = employee;
-    saveToLocalStorage();
-  };
+  if (index >= 0 && index < employees.value.length) {
+    employees.value[index] = { ...employee }  // копия для безопасности
+    saveToLocalStorage()
+  } else {
+    console.warn('Неверный индекс при обновлении:', index)
+  }
+}
 
   const deleteEmployee = (index) => {
     employees.value.splice(index, 1);
@@ -39,21 +43,19 @@ export const useEmployeeStore = defineStore('employee', () => {
   };
 
   const openModal = (index = -1) => {
-    if (index >= 0) {
-      editingEmployee.value = { ...employees.value[index] };
-      editingIndex.value = index;
-    } else {
-      editingEmployee.value = { firstName: '', lastName: '', experience: 0, age: 0, address: '' };
-      editingIndex.value = -1;
-    }
-    isModalOpen.value = true;
-  };
+  if (index >= 0) {
+    editingEmployee.value = { ...employees.value[index] }  // копия!
+    editingIndex.value = index
+  } else {
+    editingEmployee.value = { firstName: '', lastName: '', experience: 0, age: 0, address: '' }
+    editingIndex.value = -1
+  }
+  isModalOpen.value = true
+}
 
-  const closeModal = () => {
-    isModalOpen.value = false;
-    editingEmployee.value = null;
-    editingIndex.value = -1;
-  };
+const closeModal = () => {
+  isModalOpen.value = false
+}
 
   // Инициализация
   loadEmployees();
