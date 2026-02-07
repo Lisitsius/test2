@@ -43,15 +43,21 @@ export const useEmployeeStore = defineStore('employee', () => {
   };
 
   const openModal = (index = -1) => {
-  if (index >= 0) {
-    editingEmployee.value = { ...employees.value[index] }  // копия!
-    editingIndex.value = index
+  console.log('openModal вызван с index =', index);
+
+  if (typeof index === 'number' && index >= 0 && index < employees.value.length) {
+    console.log('Режим редактирования, копируем сотрудника #', index);
+    editingEmployee.value = { ...employees.value[index] };
+    editingIndex.value = index;
   } else {
-    editingEmployee.value = { firstName: '', lastName: '', experience: 0, age: 0, address: '' }
-    editingIndex.value = -1
+    console.log('Режим создания нового сотрудника');
+    editingEmployee.value = { firstName: '', lastName: '', experience: 0, age: 0, address: '' };
+    editingIndex.value = -1;
   }
-  isModalOpen.value = true
-}
+
+  isModalOpen.value = true;
+  console.log('После открытия: editingIndex =', editingIndex.value);
+};
 
 const closeModal = () => {
   isModalOpen.value = false

@@ -18,8 +18,8 @@
         <td>{{ emp.age }}</td>
         <td>{{ emp.address }}</td>
         <td>
-          <button class="edit" @click="editEmployee(index)">✏️</button>
-          <button class="delete" @click="deleteEmployee(index)">🗑</button>
+          <button class="edit" @click="store.openModal(index)">✏️</button>
+          <button class="delete" @click="store.deleteEmployee(index)">🗑</button>
         </td>
       </tr>
     </tbody>

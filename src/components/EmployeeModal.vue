@@ -70,21 +70,25 @@ watch(
 )
 
 const save = () => {
-  const employee = { ...form }
+  console.log('--- SAVE вызван ---');
+  console.log('Текущий editingIndex.value:', store.editingIndex.value);
+  console.log('isEditing.value:', isEditing.value);
+  console.log('Форма перед сохранением:', { ...form });
+
+  const employee = { ...form };
 
   if (isEditing.value) {
-    const idx = store.editingIndex.value
-    if (typeof idx === 'number' && idx >= 0) {
-      store.updateEmployee(idx, employee)
-    } else {
-      console.warn('Некорректный индекс при редактировании', idx)
-    }
+    const idx = store.editingIndex.value;
+    console.log('РЕЖИМ РЕДАКТИРОВАНИЯ → обновляем индекс', idx);
+    store.updateEmployee(idx, employee);
   } else {
-    store.addEmployee(employee)
+    console.log('РЕЖИМ СОЗДАНИЯ → добавляем нового');
+    store.addEmployee(employee);
   }
-
-  store.closeModal()
-}
+  
+  
+  store.closeModal();
+};
 </script>
 
 <style scoped>
