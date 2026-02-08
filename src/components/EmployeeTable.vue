@@ -49,13 +49,15 @@ table {
 }
 th, td {
   padding: 14px 16px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #eee;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 th {
-  background: #34495e;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
+
 tr:hover {
   background: #f8f9fa;
 }

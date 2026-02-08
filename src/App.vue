@@ -109,7 +109,7 @@ const deleteEmployee = (index) => {
 h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
 
 .btn-add {
-  background: #27ae60;
+  background: linear-gradient(135deg, #50c7829a 0%, #27ae60 100%); 
   color: white;
   padding: 12px 24px;
   border: none;
@@ -137,13 +137,16 @@ h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
   border-bottom: 1px solid #eee;
 }
 
-.employees-table th {
-  background: #34495e;
+.employees-table thead {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   font-weight: 600;
 }
+.employees-table thead tr:hover{
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
 
-.employees-table tr:hover { background: #f9f9f9; }
+.employees-table tr:hover { background: #f0f0f0; }
 
 .btn-edit {
   background: #f39c12;
