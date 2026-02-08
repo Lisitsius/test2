@@ -149,7 +149,7 @@ h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
 .employees-table tr:hover { background: #f0f0f0; }
 
 .btn-edit {
-  background: #f39c12;
+  background: #f39c12 linear-gradient(100deg, #f39c12 10%, #e74c3c 100%);
   color: white;
   border: none;
   padding: 8px 12px;
