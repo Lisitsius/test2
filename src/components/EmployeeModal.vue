@@ -1,34 +1,44 @@
 <template>
-  <div v-if="store.isModalOpen" class="modal">
-    <div class="modal-content">
+  <div v-if="isOpen" class="modal-overlay" @click.self="close">
+    <div class="modal-window">
       <div class="modal-header">
-        <h2>{{ isEditing ? 'Редактировать сотрудника' : 'Добавить сотрудника' }}</h2>
-        <span class="close" @click="store.closeModal()">&times;</span>
+        <h2>{{ title }}</h2>
+        <button class="close-btn" @click="close">×</button>
       </div>
-      <form @submit.prevent="save">
-        <div class="form-group">
-          <label for="firstName">Имя</label>
-          <input v-model="form.firstName" id="firstName" required />
+
+      <form @submit.prevent="handleSave" class="modal-form">
+        <div class="form-field">
+          <label>Имя</label>
+          <input v-model="form.firstName" required placeholder="Иван" />
         </div>
-        <div class="form-group">
-          <label for="lastName">Фамилия</label>
-          <input v-model="form.lastName" id="lastName" required />
+
+        <div class="form-field">
+          <label>Фамилия</label>
+          <input v-model="form.lastName" required placeholder="Иванов" />
         </div>
-        <div class="form-group">
-          <label for="experience">Стаж (лет)</label>
-          <input v-model.number="form.experience" type="number" id="experience" min="0" required />
+
+        <div class="form-field">
+          <label>Стаж (лет)</label>
+          <input v-model.number="form.experience" type="number" min="0" required placeholder="3" />
         </div>
-        <div class="form-group">
-          <label for="age">Возраст</label>
-          <input v-model.number="form.age" type="number" id="age" min="16" max="100" required />
+
+        <div class="form-field">
+          <label>Возраст</label>
+          <input v-model.number="form.age" type="number" min="16" max="100" required placeholder="30" />
         </div>
-        <div class="form-group">
-          <label for="address">Адрес</label>
-          <input v-model="form.address" id="address" required />
+
+        <div class="form-field">
+          <label>Адрес</label>
+          <input v-model="form.address" required placeholder="г. Москва, ул. Ленина, 10" />
         </div>
-        <div class="actions">
-          <button type="button" @click="store.closeModal()">Отмена</button>
-          <button type="submit">Сохранить</button>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-cancel" @click="close">
+            Отмена
+          </button>
+          <button type="submit" class="btn btn-save">
+            Сохранить
+          </button>
         </div>
       </form>
     </div>
@@ -36,10 +46,15 @@
 </template>
 
 <script setup>
-import { reactive, watch, computed } from 'vue'
-import { useEmployeeStore } from '../stores/employee'
+import { reactive, computed, watch } from 'vue'
 
-const store = useEmployeeStore()
+const props = defineProps({
+  isOpen: Boolean,
+  mode: { type: String, default: 'add' }, // 'add' или 'edit'
+  employee: { type: Object, default: null } // только для edit
+})
+
+const emit = defineEmits(['close', 'save'])
 
 const form = reactive({
   firstName: '',
@@ -49,120 +64,135 @@ const form = reactive({
   address: ''
 })
 
-// Самая безопасная версия isEditing
-const isEditing = computed(() => {
-  return store.editingIndex?.value >= 0 ?? false
+const title = computed(() => {
+  return props.mode === 'edit' ? 'Редактировать сотрудника' : 'Добавить сотрудника'
 })
 
-// Watch — уже хороший, но оставляем как есть
+// Заполняем форму при открытии (для редактирования)
 watch(
-  () => store.editingEmployee?.value,  // ← добавили ?.
-  (newVal) => {
-    if (newVal) {
-      Object.assign(form, newVal)
-    } else {
-      Object.assign(form, {
-        firstName: '', lastName: '', experience: 0, age: 0, address: ''
-      })
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      if (props.mode === 'edit' && props.employee) {
+        Object.assign(form, props.employee)
+      } else {
+        Object.assign(form, { firstName: '', lastName: '', experience: 0, age: 0, address: '' })
+      }
     }
   },
   { immediate: true }
 )
 
-const save = () => {
-  console.log('--- SAVE вызван ---');
-  console.log('Текущий editingIndex.value:', store.editingIndex.value);
-  console.log('isEditing.value:', isEditing.value);
-  console.log('Форма перед сохранением:', { ...form });
+const handleSave = () => {
+  emit('save', { ...form })
+  emit('close')
+}
 
-  const employee = { ...form };
-
-  if (isEditing.value) {
-    const idx = store.editingIndex.value;
-    console.log('РЕЖИМ РЕДАКТИРОВАНИЯ → обновляем индекс', idx);
-    store.updateEmployee(idx, employee);
-  } else {
-    console.log('РЕЖИМ СОЗДАНИЯ → добавляем нового');
-    store.addEmployee(employee);
-  }
-  
-  
-  store.closeModal();
-};
+const close = () => {
+  emit('close')
+}
 </script>
 
 <style scoped>
-.modal {
+.modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
-.modal-content {
+
+.modal-window {
   background: white;
-  padding: 28px;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 460px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width: 480px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
 }
+
 .modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.modal-form {
+  padding: 24px;
+}
+
+.form-field {
   margin-bottom: 20px;
 }
-.close {
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #95a5a6;
-}
-.close:hover {
-  color: #7f8c8d;
-}
-.form-group {
-  margin-bottom: 16px;
-}
-label {
+
+.form-field label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 500;
+  color: #374151;
 }
-input {
+
+.form-field input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #bdc3c7;
-  border-radius: 6px;
-  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
 }
-input:focus {
+
+.form-field input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
-.actions {
+
+.modal-actions {
   display: flex;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 28px;
 }
-.actions button {
+
+.btn {
   flex: 1;
-  padding: 12px;
+  padding: 14px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 1.05rem;
 }
-.actions button[type="submit"] {
-  background: #3498db;
+
+.btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
-}
-.actions button[type="button"] {
-  background: #bdc3c7;
-  color: #333;
 }
 </style>
