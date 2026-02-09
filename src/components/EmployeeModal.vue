@@ -1,4 +1,5 @@
 <template>
+  <!-- Затемнение фона + клик вне окна = закрытие -->
   <div v-if="isOpen" class="modal-overlay" @click.self="close">
     <div class="modal-window">
       <div class="modal-header">
@@ -6,6 +7,7 @@
         <button class="close-btn" @click="close">×</button>
       </div>
 
+      <!-- Форма ввода данных сотрудника -->
       <form @submit.prevent="handleSave" class="modal-form">
         <div class="form-field">
           <label>Имя</label>
@@ -36,16 +38,23 @@
             :class="{ 'input-error': addressError }"
             required
           />
+          <!-- Показываем ошибку, если есть -->
           <div v-if="addressError" class="error-text">
             {{ addressError }}
           </div>
         </div>
 
+        <!-- Кнопки действий -->
         <div class="modal-actions">
           <button type="button" class="btn btn-cancel" @click="close">
             Отмена
           </button>
-          <button type="submit" class="btn btn-save">
+          <!-- Кнопка сохранения активна только если форма валидна -->
+          <button
+            type="submit"
+            class="btn btn-save"
+            :disabled="!isFormValid"
+          >
             Сохранить
           </button>
         </div>
@@ -57,14 +66,17 @@
 <script setup>
 import { reactive, computed, watch } from 'vue'
 
+// Пропсы от родителя
 const props = defineProps({
-  isOpen: Boolean,
-  mode: { type: String, default: 'add' }, // 'add' или 'edit'
-  employee: { type: Object, default: null } // только для edit
+  isOpen: Boolean,                    
+  mode: { type: String, default: 'add' }, 
+  employee: { type: Object, default: null } 
 })
 
+// События, которые модалка может отправить родителю
 const emit = defineEmits(['close', 'save'])
 
+// Форма — реактивный объект для v-model
 const form = reactive({
   firstName: '',
   lastName: '',
@@ -72,49 +84,61 @@ const form = reactive({
   age: 0,
   address: ''
 })
+
+// Общая валидация формы 
+const isFormValid = computed(() => {
+  return !addressError.value &&
+         form.firstName.trim() &&
+         form.lastName.trim() &&
+         form.experience >= 0 &&
+         form.age >= 16 && form.age <= 100
+})
+
+// Валидация адреса
 const addressError = computed(() => {
   const addr = form.address.trim()
   
-  if (!addr) {
-    return 'Адрес обязателен'
-  }
-  
-  if (addr.length < 5) {
-    return 'Адрес слишком короткий (минимум 5 символов)'
-  }
-  
-  // Простая проверка на осмысленность
+  if (!addr) return 'Адрес обязателен'
+  if (addr.length < 5) return 'Адрес слишком короткий'
   if (!/[а-яА-ЯёЁ0-9]/.test(addr) || addr.length < 8) {
-    return 'Введите корректный адрес (улица, дом, город)'
+    return 'Введите нормальный адрес (улица, дом, город)'
   }
   
   return ''
 })
 
+
+
+// Заголовок зависит от режима
 const title = computed(() => {
   return props.mode === 'edit' ? 'Редактировать сотрудника' : 'Добавить сотрудника'
 })
 
-// Заполняем форму при открытии (для редактирования)
+// Заполняем форму при открытии окна
 watch(
   () => props.isOpen,
   (open) => {
     if (open) {
       if (props.mode === 'edit' && props.employee) {
-        Object.assign(form, props.employee)
+        Object.assign(form, props.employee) // копируем данные сотрудника
       } else {
+        // Сброс формы для добавления
         Object.assign(form, { firstName: '', lastName: '', experience: 0, age: 0, address: '' })
       }
     }
   },
-  { immediate: true }
+  { immediate: true } 
 )
 
+// Сохраняем данные и закрываем модалку
 const handleSave = () => {
-  emit('save', { ...form })
-  emit('close')
+  if (!isFormValid.value) return // защита от отправки невалидной формы
+  
+  emit('save', { ...form }) 
+  emit('close')             
 }
 
+// Закрытие модал без сохранения
 const close = () => {
   emit('close')
 }

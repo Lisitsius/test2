@@ -1,8 +1,13 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-import './assets/main.css';  // Глобальные стили
+import { createApp } from 'vue'         
+import { createPinia } from 'pinia'       
+import App from './App.vue'               
+import './assets/main.css'                
 
-const app = createApp(App);
-app.use(createPinia());
-app.mount('#app');
+// Создаём экземпляр Vue-приложения
+const app = createApp(App)
+
+// Подключаем Pinia (глобальное хранилище данных)
+app.use(createPinia())
+
+// Монтируем приложение в DOM (ищем элемент с id="app" в index.html)
+app.mount('#app')

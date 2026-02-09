@@ -16,6 +16,7 @@
         </tr>
       </thead>
       <tbody>
+        <!-- Перебираем всех сотрудников -->
         <tr v-for="(emp, index) in employees" :key="index">
           <td>{{ emp.firstName }}</td>
           <td>{{ emp.lastName }}</td>
@@ -30,6 +31,7 @@
       </tbody>
     </table>
 
+    <!-- Модал для добавления/редактирования -->
     <EmployeeModal
       :is-open="modalOpen"
       :mode="modalMode"
@@ -42,31 +44,29 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import EmployeeModal from './components/EmployeeModal.vue' // скорректируй путь
+import EmployeeModal from './components/EmployeeModal.vue' // путь к модалке
 
-const employees = ref([])
+const employees = ref([])               // массив сотрудников
 
-const modalOpen = ref(false)
-const modalMode = ref('add')
-const editingEmployee = ref(null)
-const editingIndex = ref(-1)
+const modalOpen = ref(false)            // открыт ли модал
+const modalMode = ref('add')            // 'add' или 'edit'
+const editingEmployee = ref(null)       // данные редактируемого сотрудника
+const editingIndex = ref(-1)            // индекс в массиве
 
-// Загрузка из localStorage
+// Загружаем из localStorage
 const loadEmployees = () => {
   const saved = localStorage.getItem('employees')
-  if (saved) {
-    employees.value = JSON.parse(saved)
-  }
+  if (saved) employees.value = JSON.parse(saved)
 }
 
-// Автосохранение при любом изменении
+// Автосохранение при изменении
 watch(employees, (newList) => {
   localStorage.setItem('employees', JSON.stringify(newList))
 }, { deep: true })
 
-// Загружаем сразу
-loadEmployees()
+loadEmployees() // грузим сразу
 
+// Открываем модал для добавления
 const openAddModal = () => {
   modalMode.value = 'add'
   editingEmployee.value = null
@@ -74,13 +74,15 @@ const openAddModal = () => {
   modalOpen.value = true
 }
 
+// Открываем для редактирования
 const openEditModal = (index) => {
   modalMode.value = 'edit'
-  editingEmployee.value = { ...employees.value[index] }
+  editingEmployee.value = { ...employees.value[index] } // копия
   editingIndex.value = index
   modalOpen.value = true
 }
 
+// Закрываем модал и чистим
 const closeModal = () => {
   modalOpen.value = false
   modalMode.value = 'add'
@@ -88,6 +90,7 @@ const closeModal = () => {
   editingIndex.value = -1
 }
 
+// Обрабатываем сохранение из модал
 const handleSave = (updatedEmployee) => {
   if (modalMode.value === 'edit' && editingIndex.value >= 0) {
     employees.value[editingIndex.value] = updatedEmployee
@@ -97,8 +100,9 @@ const handleSave = (updatedEmployee) => {
   closeModal()
 }
 
+// Удаляем сотрудника
 const deleteEmployee = (index) => {
-  if (confirm('Удалить сотрудника?')) {
+  if (confirm('Удалить?')) {
     employees.value.splice(index, 1)
   }
 }
