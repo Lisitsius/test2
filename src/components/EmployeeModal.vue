@@ -28,8 +28,17 @@
         </div>
 
         <div class="form-field">
-          <label>Адрес</label>
-          <input v-model="form.address" required placeholder="г. Москва, ул. Ленина, 10" />
+          <label for="address">Адрес</label>
+          <input
+            v-model="form.address"
+            id="address"
+            placeholder="г. Москва, ул. Ленина, д. 10"
+            :class="{ 'input-error': addressError }"
+            required
+          />
+          <div v-if="addressError" class="error-text">
+            {{ addressError }}
+          </div>
         </div>
 
         <div class="modal-actions">
@@ -62,6 +71,24 @@ const form = reactive({
   experience: 0,
   age: 0,
   address: ''
+})
+const addressError = computed(() => {
+  const addr = form.address.trim()
+  
+  if (!addr) {
+    return 'Адрес обязателен'
+  }
+  
+  if (addr.length < 5) {
+    return 'Адрес слишком короткий (минимум 5 символов)'
+  }
+  
+  // Простая проверка на осмысленность
+  if (!/[а-яА-ЯёЁ0-9]/.test(addr) || addr.length < 8) {
+    return 'Введите корректный адрес (улица, дом, город)'
+  }
+  
+  return ''
 })
 
 const title = computed(() => {
@@ -153,7 +180,7 @@ const close = () => {
 }
 
 .form-field input {
-  width: 100%;
+  width: 90%;
   padding: 12px 16px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -194,5 +221,15 @@ const close = () => {
 .btn-save {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 6px;
 }
 </style>
